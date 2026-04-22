@@ -1,0 +1,6 @@
+venv/
+db.sqlite3
+__pycache__/
+*.pyc
+media/
+Ecommerce_Sales_Data_2024_2025.csv

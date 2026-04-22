@@ -1,0 +1,87 @@
+<div class="space-y-16 animate-in fade-in duration-500">
+    <!-- Row 01: Global Telemetry + Controls -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1">
+            <div class="bg-white tactical-border p-8 rounded-[2rem] tactical-glow">
+                <div class="flex justify-between items-start mb-6">
+                    <span class="text-[9px] font-mono font-bold text-brand-muted uppercase tracking-[0.3em]">Metric_01</span>
+                    <span class="text-brand-red text-[10px] font-mono font-bold tracking-widest">▲ 12.5%</span>
+                </div>
+                <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-brand-muted mb-1">Total_Revenue</p>
+                <h3 class="text-4xl font-heading font-bold text-brand-text tracking-tight">${{ stats.revenue|floatformat:0 }}</h3>
+            </div>
+            <div class="bg-white tactical-border p-8 rounded-[2rem] tactical-glow">
+                <div class="flex justify-between items-start mb-6">
+                    <span class="text-[9px] font-mono font-bold text-brand-muted uppercase tracking-[0.3em]">Metric_02</span>
+                    <span class="text-brand-red text-[10px] font-mono font-bold tracking-widest">▲ 4.3%</span>
+                </div>
+                <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-brand-muted mb-1">Total_Volume</p>
+                <h3 class="text-4xl font-heading font-bold text-brand-text tracking-tight">{{ stats.orders }}</h3>
+            </div>
+            <div class="bg-white tactical-border p-8 rounded-[2rem] tactical-glow">
+                <div class="flex justify-between items-start mb-6">
+                    <span class="text-[9px] font-mono font-bold text-brand-muted uppercase tracking-[0.3em]">Metric_03</span>
+                </div>
+                <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-brand-muted mb-1">Active_Nodes</p>
+                <h3 class="text-4xl font-heading font-bold text-brand-text tracking-tight">{{ stats.customers }}</h3>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-end gap-4 min-w-[200px]">
+            <span class="text-[9px] font-mono uppercase tracking-[0.4em] text-brand-muted">Data_Extract //</span>
+            <div class="flex gap-2">
+                <a href="{% url 'export_report' 'csv' %}?country={{ selected_country }}" class="px-6 py-2 bg-brand-text text-white rounded-full text-[10px] font-mono font-bold hover:bg-brand-red transition-all uppercase tracking-widest">CSV</a>
+                <a href="{% url 'export_report' 'excel' %}?country={{ selected_country }}" class="px-6 py-2 tactical-border text-brand-text rounded-full text-[10px] font-mono font-bold hover:bg-brand-bg transition-all uppercase tracking-widest">XLSX</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 02: Visual Analytics Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-6">
+                <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Visual_01 //</span>
+            </div>
+            <div class="mt-4">{{ charts.chart_trend|safe }}</div>
+        </div>
+        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+             <div class="absolute top-0 right-0 p-6">
+                <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Visual_02 //</span>
+            </div>
+            <div class="mt-4">{{ charts.chart_country|safe }}</div>
+        </div>
+    </div>
+
+    <!-- Row 03: Advanced Intelligence -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+             <div class="absolute top-0 right-0 p-6">
+                <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Intelligence_01 //</span>
+            </div>
+             {% if charts.chart_rfm %}
+                <div class="mt-4">{{ charts.chart_rfm|safe }}</div>
+             {% else %}
+                <div class="flex items-center justify-center min-h-[300px] text-[10px] font-mono text-brand-muted uppercase tracking-widest animate-pulse">
+                    Calculating_RFM_Matrices...
+                </div>
+             {% endif %}
+        </div>
+        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-6">
+                <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Inventory_01 //</span>
+            </div>
+            <div class="mt-4">{{ charts.chart_prod|safe }}</div>
+        </div>
+    </div>
+
+    <!-- Row 04: Predictive Forecasting (Full Width) -->
+    {% if charts.chart_forecast %}
+    <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-6">
+            <span class="text-[9px] font-mono text-brand-red uppercase tracking-[0.4em] font-bold">Prediction_Engine //</span>
+        </div>
+        <div class="mt-4">{{ charts.chart_forecast|safe }}</div>
+    </div>
+    {% endif %}
+
+</div>

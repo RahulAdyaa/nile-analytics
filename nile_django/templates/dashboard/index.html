@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <!-- Header with Dynamic Filters -->
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-8 border-b border-brand-border">
+        <div>
+            <div class="flex items-center space-x-2 text-[10px] font-mono text-brand-red uppercase tracking-widest mb-4">
+                <span class="w-2 h-2 bg-brand-red rounded-full"></span>
+                <span>Operational_Overview // 01</span>
+            </div>
+            <h2 class="text-6xl font-heading font-bold text-brand-text tracking-tight">Intelligence Dashboard</h2>
+            <p class="text-brand-muted mt-4 max-w-xl font-medium">Real-time telemetry and advanced analytics for the global retail network.</p>
+        </div>
+        
+        <div class="flex flex-wrap items-center gap-4">
+            <div class="flex items-center space-x-4 bg-brand-bg tactical-border rounded-full px-6 py-3">
+                <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Region_Focus:</label>
+                <select name="country" 
+                        hx-get="{% url 'dashboard_home' %}" 
+                        hx-target="#dashboard-dynamic-content" 
+                        hx-indicator="#loading-spinner"
+                        hx-push-url="true"
+                        class="bg-transparent border-none text-brand-text text-xs font-bold font-mono focus:ring-0 cursor-pointer uppercase tracking-wider">
+                    <option value="All">GLOBAL_VIEW</option>
+                    {% for country in countries %}
+                        <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>{{ country|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Content Container -->
+    <div id="dashboard-dynamic-content" class="relative">
+        <div id="loading-spinner" class="htmx-indicator absolute inset-0 flex items-center justify-center bg-brand-bg/80 backdrop-blur-sm z-[100] rounded-3xl">
+            <div class="flex flex-col items-center space-y-4">
+                <div class="animate-spin h-12 w-12 border-2 border-brand-red border-t-transparent rounded-full"></div>
+                <span class="text-[10px] font-mono uppercase tracking-[0.4em] animate-pulse">Synchronizing_Data...</span>
+            </div>
+        </div>
+        {% include 'dashboard/partials/charts_content.html' %}
+    </div>
+</div>
+{% endblock %}
