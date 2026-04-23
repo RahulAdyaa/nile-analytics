@@ -16,10 +16,32 @@ def generate_bulk_report(format='csv'):
     return AnalyticsService.generate_excel_report(queryset)
 
 @shared_task
-def scheduled_data_cleanup():
+def process_data_upload(upload_id):
     """
-    Example of a scheduled task.
+    Background task to process uploaded data via ETLPipeline.
     """
-    # Logic to remove orphan records or old logs
-    print("Performing scheduled data cleanup...")
-    return "Success"
+    from .models import DataUpload
+    from .etl.pipeline import ETLPipeline
+    import time
+    import traceback
+
+    try:
+        upload = DataUpload.objects.get(id=upload_id)
+        upload.status = DataUpload.STATUS_PROCESSING
+        upload.save()
+
+        start_time = time.time()
+        
+        pipeline = ETLPipeline(upload.file.path, upload.column_mapping)
+        pipeline.run()
+
+        upload.status = DataUpload.STATUS_SUCCESS
+        upload.rows_processed = len(pipeline.final_df) if pipeline.final_df is not None else 0
+        upload.processing_time_ms = int((time.time() - start_time) * 1000)
+        upload.save()
+        return "Success"
+    except Exception as e:
+        upload.status = DataUpload.STATUS_FAILED
+        upload.error_message = f"{str(e)}\n{traceback.format_exc()}"
+        upload.save()
+        return f"Failed: {str(e)}"

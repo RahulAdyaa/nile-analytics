@@ -33,10 +33,28 @@
 
     <!-- Dynamic Content Container -->
     <div id="dashboard-dynamic-content" class="relative">
-        <div id="loading-spinner" class="htmx-indicator absolute inset-0 flex items-center justify-center bg-brand-bg/80 backdrop-blur-sm z-[100] rounded-3xl">
-            <div class="flex flex-col items-center space-y-4">
-                <div class="animate-spin h-12 w-12 border-2 border-brand-red border-t-transparent rounded-full"></div>
-                <span class="text-[10px] font-mono uppercase tracking-[0.4em] animate-pulse">Synchronizing_Data...</span>
+        <div id="loading-spinner" class="htmx-indicator absolute inset-0 z-[100] rounded-3xl bg-white/40 backdrop-blur-sm overflow-hidden">
+            <!-- Skeleton Layout -->
+            <div class="space-y-16 animate-pulse opacity-60 pointer-events-none p-2">
+                <!-- Row 01 Skeleton -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="h-32 bg-gray-200 rounded-[2rem]"></div>
+                    <div class="h-32 bg-gray-200 rounded-[2rem]"></div>
+                    <div class="h-32 bg-gray-200 rounded-[2rem]"></div>
+                </div>
+                <!-- Row 02 Skeleton -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div class="h-[400px] bg-gray-200 rounded-[2.5rem]"></div>
+                    <div class="h-[400px] bg-gray-200 rounded-[2.5rem]"></div>
+                </div>
+            </div>
+            
+            <!-- Spinner Overlay -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="flex flex-col items-center space-y-4 bg-white/90 p-8 rounded-3xl backdrop-blur-md tactical-border shadow-2xl">
+                    <div class="animate-spin h-10 w-10 border-2 border-brand-red border-t-transparent rounded-full"></div>
+                    <span class="text-[10px] font-mono uppercase tracking-[0.4em] text-brand-red font-bold">Computing_Vectors...</span>
+                </div>
             </div>
         </div>
         {% include 'dashboard/partials/charts_content.html' %}

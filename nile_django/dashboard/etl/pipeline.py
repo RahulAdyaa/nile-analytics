@@ -16,12 +16,35 @@ class ETLPipeline:
     def run(self):
         """Main execution entry point for the ETL pipeline."""
         print(f"Starting ETL Pipeline for: {self.file_path}")
-        self.extract()
+        if self.raw_df is None:
+            self.extract()
         self.validate_schema()
         self.clean_data()
         self.feature_engineering()
         self.load_to_db()
         print("ETL Pipeline completed successfully.")
+
+    @property
+    def expected_columns_list(self):
+        return [
+            'Order ID', 'Order Date', 'Customer Name', 'Region', 'City',
+            'Category', 'Sub-Category', 'Product Name', 'Quantity',
+            'Unit Price', 'Discount', 'Sales', 'Profit', 'Payment Mode'
+        ]
+
+    def get_mapping_preview(self):
+        """Extracts headers and performs auto-mapping for review."""
+        if self.raw_df is None:
+            self.extract()
+        self._auto_map_columns()
+        
+        confidence = len(self.column_mapping) / len(self.expected_columns_list)
+        return {
+            'headers': list(self.raw_df.columns),
+            'mapping': self.column_mapping,
+            'expected': self.expected_columns_list,
+            'confidence': confidence
+        }
 
     def extract(self):
         """Step 1: Extraction - Support CSV and Excel."""

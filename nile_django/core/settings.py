@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,13 +20,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
+import dj_database_url
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1oitdf9iu)$%e5xn-zwk3ic0x!jo_gz-gi%v=yw)308=7gsfha'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-1oitdf9iu)$%e5xn-zwk3ic0x!jo_gz-gi%v=yw)308=7gsfha')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['*']
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # Application definition
@@ -95,14 +101,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'nile_db',
-        'USER': 'rahuladya',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        # Replace this value with your local database URL
+        default='postgresql://rahuladya:@127.0.0.1:5432/nile_db',
+        conn_max_age=600
+    )
 }
 
 
@@ -157,12 +160,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 
 # Celery / Redis Settings
-CELERY_BROKER_URL = 'redis://localhost:6379/1'
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379/1')
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
+
+# ─── Production Security ──────────────────────────────────────────────────────
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000 # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    CSRF_TRUSTED_ORIGINS = [f'https://{RENDER_EXTERNAL_HOSTNAME}'] if RENDER_EXTERNAL_HOSTNAME else []
 
 # ─── Django REST Framework ────────────────────────────────────────────────────
 REST_FRAMEWORK = {

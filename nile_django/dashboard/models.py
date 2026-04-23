@@ -28,7 +28,7 @@ class Product(models.Model):
 
 class Sale(models.Model):
     order_id = models.CharField(max_length=50)
-    order_date = models.DateField()
+    order_date = models.DateField(db_index=True)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='sales')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='sales')
     quantity = models.IntegerField()
@@ -37,6 +37,13 @@ class Sale(models.Model):
     total_sales = models.DecimalField(max_digits=15, decimal_places=2)
     profit = models.DecimalField(max_digits=15, decimal_places=2)
     payment_mode = models.CharField(max_length=100)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['order_date', 'customer']),
+            models.Index(fields=['customer', 'total_sales']),
+            models.Index(fields=['product', 'total_sales']),
+        ]
 
     def __str__(self):
         return f"Order {self.order_id} - {self.product.name}"

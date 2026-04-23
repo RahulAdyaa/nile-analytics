@@ -74,7 +74,7 @@
     </div>
 
     <!-- Upload History -->
-    <div class="bg-white tactical-border rounded-3xl p-10 tactical-glow">
+    <div class="bg-white tactical-border rounded-3xl p-10 tactical-glow" id="upload-history" hx-get="{% url 'control_center' %}" hx-trigger="every 2s" hx-select="#upload-history" hx-swap="outerHTML">
         <div class="flex items-center justify-between mb-6">
             <div class="flex items-center space-x-2 text-[10px] font-mono text-brand-muted uppercase tracking-widest">
                 <span>Processing_History //</span>

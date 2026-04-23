@@ -201,6 +201,7 @@ def upload_data(request):
     uploaded_files = request.FILES.getlist('file')
     success_count = 0
     fail_count = 0
+    from dashboard.tasks import process_data_upload
     from dashboard.etl.pipeline import ETLPipeline
 
     for uploaded_file in uploaded_files:
@@ -222,17 +223,17 @@ def upload_data(request):
         log_action(request.user, AuditLog.ACTION_UPLOAD, f'Uploaded {filename}', request)
 
         pipeline = ETLPipeline(upload.file.path)
-        start_time = time.time()
         try:
-            pipeline.run()
-            elapsed = int((time.time() - start_time) * 1000)
+            preview = pipeline.get_mapping_preview()
             
-            upload.status = DataUpload.STATUS_SUCCESS
-            upload.rows_processed = Sale.objects.count() # Or the specific rows inserted, but this is fine
-            upload.column_mapping = pipeline.column_mapping
-            upload.processing_time_ms = elapsed
+            # If confidence is less than 80%, redirect to ETL wizard
+            if preview['confidence'] < 0.8:
+                return redirect('review_mapping', upload_id=upload.id)
+                
+            # Otherwise, auto-map and trigger Celery Task
+            upload.column_mapping = preview['mapping']
             upload.save()
-            
+            process_data_upload.delay(upload.id)
             success_count += 1
         except Exception as e:
             upload.status = DataUpload.STATUS_FAILED
@@ -242,9 +243,52 @@ def upload_data(request):
             fail_count += 1
 
     if success_count > 0:
-        messages.success(request, f'Successfully ingested {success_count} file(s).')
+        messages.success(request, f'Successfully queued {success_count} file(s) for background processing.')
 
     return redirect('control_center')
+
+
+@login_required
+def review_mapping(request, upload_id):
+    """The ETL Wizard: Allows user to correct column mappings."""
+    from dashboard.etl.pipeline import ETLPipeline
+    upload = get_object_or_404(DataUpload, id=upload_id)
+    
+    if request.method == 'POST':
+        # Process the submitted mapping
+        mapping = {}
+        for key, value in request.POST.items():
+            if key.startswith('map_') and value:
+                expected_col = key[4:]  # remove 'map_' prefix
+                mapping[value] = expected_col # actual -> expected
+                
+        upload.column_mapping = mapping
+        upload.save()
+        
+        # Trigger Celery Task
+        from dashboard.tasks import process_data_upload
+        process_data_upload.delay(upload.id)
+        
+        messages.success(request, f'Mapping confirmed. Processing {upload.original_filename} in the background.')
+        return redirect('control_center')
+        
+    # GET request: generate preview
+    pipeline = ETLPipeline(upload.file.path)
+    preview = pipeline.get_mapping_preview()
+    
+    preview_data = []
+    for actual in preview['headers']:
+        preview_data.append({
+            'actual': actual,
+            'mapped_to': preview['mapping'].get(actual, '')
+        })
+        
+    context = {
+        'upload': upload,
+        'preview_data': preview_data,
+        'expected': preview['expected']
+    }
+    return render(request, 'dashboard/confirm_mapping.html', context)
 
 
 

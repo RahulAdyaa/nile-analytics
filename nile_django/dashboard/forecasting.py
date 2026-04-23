@@ -25,43 +25,47 @@ class ForecastingService:
             .order_by('order_date')
         )
 
-        if not data or len(data) < 7:
+        if not data or len(data) < 14:  # Need at least two weeks for seasonality
             return None
 
         df = pd.DataFrame(data)
         df.rename(columns={'order_date': 'date', 'revenue': 'y'}, inplace=True)
         df['date'] = pd.to_datetime(df['date'])
         df['y'] = df['y'].astype(float)
-        df = df.sort_values('date').reset_index(drop=True)
-
-        # 2. Linear Trend via Least Squares
-        df['x'] = np.arange(len(df))
-        slope, intercept = np.polyfit(df['x'], df['y'], 1)
-
-        # 3. Weighted Moving Average (window=7, recent days weighted heavier)
-        window = min(7, len(df))
-        weights = np.arange(1, window + 1, dtype=float)
-        weights /= weights.sum()
-        wma = df['y'].rolling(window=window).apply(lambda vals: np.dot(vals, weights), raw=True)
-        df['wma'] = wma
-
+        
+        # Ensure a continuous date range to fill missing days with 0
+        df.set_index('date', inplace=True)
+        df = df.asfreq('D', fill_value=0)
+        
+        # 2. Fit Exponential Smoothing model (Holt-Winters)
+        from statsmodels.tsa.holtwinters import ExponentialSmoothing
+        
+        # Using additive trend and weekly seasonality
+        model = ExponentialSmoothing(
+            df['y'],
+            trend='add',
+            seasonal='add',
+            seasonal_periods=7,
+            initialization_method="estimated"
+        )
+        fit_model = model.fit(optimized=True)
+        
+        # 3. Generate forecast
+        forecast_y = fit_model.forecast(days_ahead)
+        
         # 4. Generate forecast dates
-        last_date = df['date'].iloc[-1]
+        last_date = df.index[-1]
         future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=days_ahead)
-        future_x = np.arange(len(df), len(df) + days_ahead)
+        
+        # 5. Confidence band (using root mean squared error)
+        rmse = np.sqrt(fit_model.sse / len(df))
+        # Simple widening confidence interval over time
+        ci_multiplier = 1.96 * np.sqrt(np.arange(1, days_ahead + 1))
+        upper_band = forecast_y + rmse * ci_multiplier
+        lower_band = np.maximum(0, forecast_y - rmse * ci_multiplier) # prevent negative revenue
 
-        # Forecast = linear trend + residual correction from last WMA
-        last_wma = df['wma'].dropna().iloc[-1] if df['wma'].dropna().any() else df['y'].iloc[-1]
-        last_trend = slope * df['x'].iloc[-1] + intercept
-        correction = last_wma - last_trend
-
-        forecast_y = slope * future_x + intercept + correction
-
-        # 5. Confidence band (±1 std of recent residuals)
-        residuals = df['y'].iloc[-window:] - (slope * df['x'].iloc[-window:] + intercept)
-        std_dev = residuals.std() if len(residuals) > 1 else df['y'].std() * 0.1
-        upper_band = forecast_y + 1.5 * std_dev
-        lower_band = forecast_y - 1.5 * std_dev
+        # For plotting, reset index
+        df.reset_index(inplace=True)
 
         # 6. Build Plotly figure
         fig = go.Figure()
