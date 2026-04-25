@@ -130,18 +130,33 @@ def dashboard_home(request):
     sales = Sale.objects.all()
 
     country = request.GET.get('country')
+    category = request.GET.get('category')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
     if country and country != 'All':
         sales = sales.filter(customer__region=country)
+    if category and category != 'All':
+        sales = sales.filter(product__category=category)
+    if start_date:
+        sales = sales.filter(order_date__gte=start_date)
+    if end_date:
+        sales = sales.filter(order_date__lte=end_date)
 
     stats = get_dashboard_stats(sales)
     charts = generate_charts(sales)
     countries = Customer.objects.values_list('region', flat=True).distinct().order_by('region')
+    categories = Product.objects.values_list('category', flat=True).distinct().order_by('category')
 
     context = {
         'stats': stats,
         'charts': charts,
         'countries': countries,
-        'selected_country': country or 'All'
+        'categories': categories,
+        'selected_country': country or 'All',
+        'selected_category': category or 'All',
+        'start_date': start_date or '',
+        'end_date': end_date or '',
     }
 
     if request.htmx:

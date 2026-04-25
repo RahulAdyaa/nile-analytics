@@ -12,23 +12,41 @@
             <h2 class="text-6xl font-heading font-bold text-brand-text tracking-tight">Intelligence Dashboard</h2>
             <p class="text-brand-muted mt-4 max-w-xl font-medium">Real-time telemetry and advanced analytics for the global retail network.</p>
         </div>
-        
-        <div class="flex flex-wrap items-center gap-4">
-            <div class="flex items-center space-x-4 bg-brand-bg tactical-border rounded-full px-6 py-3">
-                <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Region_Focus:</label>
-                <select name="country" 
-                        hx-get="{% url 'dashboard_home' %}" 
-                        hx-target="#dashboard-dynamic-content" 
-                        hx-indicator="#loading-spinner"
-                        hx-push-url="true"
-                        class="bg-transparent border-none text-brand-text text-xs font-bold font-mono focus:ring-0 cursor-pointer uppercase tracking-wider">
+        <form id="filters-form" 
+              hx-get="{% url 'dashboard_home' %}" 
+              hx-target="#dashboard-dynamic-content" 
+              hx-indicator="#loading-spinner"
+              hx-trigger="change"
+              hx-push-url="true"
+              class="flex flex-wrap items-center gap-4">
+            
+            <div class="flex items-center space-x-3 bg-brand-bg tactical-border rounded-full px-5 py-2">
+                <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Date:</label>
+                <input type="date" name="start_date" value="{{ start_date }}" class="bg-transparent border-none text-brand-text text-xs font-bold font-mono focus:ring-0 cursor-pointer p-0">
+                <span class="text-brand-muted text-xs font-mono">-</span>
+                <input type="date" name="end_date" value="{{ end_date }}" class="bg-transparent border-none text-brand-text text-xs font-bold font-mono focus:ring-0 cursor-pointer p-0">
+            </div>
+
+            <div class="flex items-center space-x-3 bg-brand-bg tactical-border rounded-full px-5 py-2">
+                <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Category:</label>
+                <select name="category" class="bg-transparent border-none text-brand-text text-xs font-bold font-mono focus:ring-0 cursor-pointer uppercase tracking-wider p-0 pr-6">
+                    <option value="All">ALL_CATEGORIES</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat|upper }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex items-center space-x-3 bg-brand-bg tactical-border rounded-full px-5 py-2">
+                <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Region:</label>
+                <select name="country" class="bg-transparent border-none text-brand-text text-xs font-bold font-mono focus:ring-0 cursor-pointer uppercase tracking-wider p-0 pr-6">
                     <option value="All">GLOBAL_VIEW</option>
                     {% for country in countries %}
                         <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>{{ country|upper }}</option>
                     {% endfor %}
                 </select>
             </div>
-        </div>
+        </form>
     </div>
 
     <!-- Dynamic Content Container -->
