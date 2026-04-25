@@ -41,10 +41,7 @@ services:
           name: nile-redis
           property: connectionString
       - key: SECRET_KEY
-        fromService:
-          type: web
-          name: nile-analytics-web
-          property: envVar:SECRET_KEY
+        generateValue: true
       - key: DEBUG
         value: "False"
       - key: PYTHON_VERSION
