@@ -7,29 +7,29 @@ startCommand: "gunicorn core.wsgi:application"
 envVars:
 - key: DATABASE_URL
 fromDatabase:
-name: nile-db
-property: connectionString
+  name: nile-db
+  property: connectionString
 - key: REDIS_URL
 fromService:
-type: redis
-name: nile-redis
-property: connectionString
+  type: redis
+  name: nile-redis
+  property: connectionString
 - fromGroup: nile-shared-vars
 - key: DEBUG
-value: "False"
+  value: "False"
 - key: PYTHON_VERSION
-value: "3.9.13"
+  value: "3.9.13"
 
 - type: redis
-name: nile-redis
-ipAllowList: []
+  name: nile-redis
+  ipAllowList: []
 
 databases:
-- name: nile-db
-plan: free
+  - name: nile-db
+  plan: free
 
 envVarGroups:
-- name: nile-shared-vars
-envVars:
-- key: SECRET_KEY
+  - name: nile-shared-vars
+  envVars:
+    - key: SECRET_KEY
 generateValue: true
