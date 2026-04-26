@@ -205,6 +205,7 @@ def dashboard_home(request):
         sales = sales.filter(order_date__lte=end_date)
 
     stats = get_dashboard_stats(sales)
+    charts = generate_charts(sales)
     countries = Customer.objects.values_list('region', flat=True).distinct().order_by('region')
     categories = Product.objects.values_list('category', flat=True).distinct().order_by('category')
     latest_upload = DataUpload.objects.filter(status=DataUpload.STATUS_SUCCESS).order_by('-uploaded_at').first()
