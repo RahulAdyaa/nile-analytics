@@ -7,6 +7,9 @@ class Customer(models.Model):
     region = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
 
+    age = models.IntegerField(null=True, blank=True)
+    gender = models.CharField(max_length=20, null=True, blank=True)
+
     class Meta:
         unique_together = ('name', 'region', 'city')
 
@@ -37,6 +40,9 @@ class Sale(models.Model):
     total_sales = models.DecimalField(max_digits=15, decimal_places=2)
     profit = models.DecimalField(max_digits=15, decimal_places=2)
     payment_mode = models.CharField(max_length=100)
+    delivery_time_days = models.IntegerField(null=True, blank=True)
+    returned = models.BooleanField(default=False)
+    shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     class Meta:
         indexes = [

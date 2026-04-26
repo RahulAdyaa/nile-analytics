@@ -7,6 +7,10 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
@@ -34,14 +38,25 @@
         body { background-color: #FDFDFD; color: #111111; line-height: 1.6; }
         .font-heading { font-family: 'Outfit', sans-serif; }
         .tactical-border { border: 1px solid #E4E4E7; }
-        .tactical-glow { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05); }
+        .tactical-glow { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05); transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
+        .tactical-glow:hover { 
+            box-shadow: 0 20px 25px -5px rgba(230, 59, 46, 0.05), 0 10px 10px -5px rgba(230, 59, 46, 0.03); 
+            border-color: #E63B2E;
+            transform: translateY(-4px);
+        }
         .scanline { background: linear-gradient(to bottom, transparent 50%, rgba(17, 17, 17, 0.01) 50%); background-size: 100% 4px; pointer-events: none; }
+        
+        /* Locomotive Scroll Styles */
+        html.has-scroll-smooth { overflow: hidden; }
+        html.has-scroll-dragging { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+        .has-scroll-smooth body { overflow: hidden; }
+        .has-scroll-smooth [data-scroll-container] { min-height: 100vh; }
     </style>
 </head>
 <body class="min-h-screen font-sans antialiased text-brand-text">
-    <div class="fixed inset-0 scanline z-[9999] opacity-20 pointer-events-none"></div>
+    <div class="fixed inset-0 scanline z-[10000] opacity-20 pointer-events-none"></div>
 
-    <nav class="sticky top-0 z-50 px-8 py-6 flex justify-between items-center bg-brand-bg/80 backdrop-blur-md border-b border-brand-border h-24">
+    <nav class="fixed top-0 left-0 w-full z-[10001] px-8 py-6 flex justify-between items-center bg-brand-bg/80 backdrop-blur-md border-b border-brand-border h-24 pointer-events-auto">
         <div class="flex items-center space-x-6">
             <h1 class="text-xl font-bold tracking-tighter uppercase font-mono">
                 <a href="{% url 'dashboard_home' %}" class="hover:text-brand-red transition-colors">NILE <span class="text-brand-red">//</span> ANALYTICS</a>
@@ -51,11 +66,20 @@
                 <span>Active_Stream_Retail_V2</span>
             </div>
             {% if user.is_authenticated %}
-            <div class="hidden lg:flex items-center space-x-6 ml-8 text-xs font-mono uppercase tracking-widest">
-                <a href="{% url 'audit_log' %}" class="px-4 py-2 text-brand-muted hover:text-brand-red transition-all duration-200">
-                    Audit_Log
+            <div class="hidden lg:flex items-center space-x-4 ml-8 text-xs font-mono uppercase tracking-widest">
+                <a href="{% url 'audit_log' %}" 
+                   hx-boost="false" 
+                   target="_self"
+                   class="px-4 py-2.5 tactical-border rounded-full text-brand-muted hover:text-brand-red hover:bg-brand-bg transition-all duration-200 flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Audit_Log</span>
                 </a>
-                <a href="{% url 'control_center' %}" class="px-5 py-2.5 bg-brand-text text-white rounded-full hover:bg-brand-red transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md">
+                <a href="{% url 'control_center' %}" 
+                   hx-boost="false" 
+                   target="_self"
+                   class="px-5 py-2.5 bg-brand-text text-white rounded-full hover:bg-brand-red transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
@@ -90,8 +114,10 @@
         </div>
     </nav>
 
-    <main class="container mx-auto px-8 py-12">
-        {% block content %}{% endblock %}
+    <main class="container mx-auto px-8 pt-32 pb-12" data-scroll-container>
+        <div data-scroll-section>
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
     <footer class="mt-auto py-12 border-t border-brand-border bg-white">
@@ -105,9 +131,70 @@
     </footer>
 
     <script>
+        // Locomotive Scroll Initialization
+        const scroll = new LocomotiveScroll({
+            el: document.querySelector('[data-scroll-container]'),
+            smooth: true,
+            lerp: 0.07,
+            multiplier: 1.2
+        });
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        function initAnimations(container = document) {
+            // Stats stagger
+            const isDocument = container === document;
+            const targets = isDocument 
+                ? Array.from(document.querySelectorAll(".tactical-glow"))
+                : Array.from(container.querySelectorAll(".tactical-glow"));
+            
+            if (!isDocument && container.classList && container.classList.contains("tactical-glow")) {
+                targets.unshift(container);
+            }
+
+            if (targets.length > 0) {
+                gsap.from(targets, {
+                    duration: 1.2,
+                    y: 60,
+                    opacity: 0,
+                    stagger: 0.15,
+                    ease: "power4.out",
+                    clearProps: "all"
+                });
+            }
+
+            // Heading reveal
+            const headings = isDocument
+                ? Array.from(document.querySelectorAll(".font-heading"))
+                : Array.from(container.querySelectorAll(".font-heading"));
+
+            if (!isDocument && container.classList && container.classList.contains("font-heading")) {
+                headings.unshift(container);
+            }
+
+            if (headings.length > 0) {
+                gsap.from(headings, {
+                    duration: 1,
+                    y: 30,
+                    opacity: 0,
+                    ease: "power3.out",
+                    clearProps: "all"
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initAnimations();
+            setTimeout(() => scroll.update(), 1000);
+        });
+
         document.body.addEventListener('htmx:afterSwap', function(evt) {
             const scripts = evt.detail.elt.querySelectorAll('script');
             scripts.forEach(s => eval(s.innerHTML));
+            scroll.update();
+            // Only animate the newly swapped content to prevent global "popping"
+            initAnimations(evt.detail.elt);
         });
     </script>
 </body>

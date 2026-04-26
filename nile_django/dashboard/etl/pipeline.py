@@ -29,7 +29,8 @@ class ETLPipeline:
         return [
             'Order ID', 'Order Date', 'Customer Name', 'Region', 'City',
             'Category', 'Sub-Category', 'Product Name', 'Quantity',
-            'Unit Price', 'Discount', 'Sales', 'Profit', 'Payment Mode'
+            'Unit Price', 'Discount', 'Sales', 'Profit', 'Payment Mode',
+            'Delivery Time', 'Returned', 'Shipping Cost', 'Age', 'Gender'
         ]
 
     def get_mapping_preview(self):
@@ -64,24 +65,30 @@ class ETLPipeline:
         expected_columns = [
             'Order ID', 'Order Date', 'Customer Name', 'Region', 'City',
             'Category', 'Sub-Category', 'Product Name', 'Quantity',
-            'Unit Price', 'Discount', 'Sales', 'Profit', 'Payment Mode'
+            'Unit Price', 'Discount', 'Sales', 'Profit', 'Payment Mode',
+            'Delivery Time', 'Returned', 'Shipping Cost', 'Age', 'Gender'
         ]
         
         aliases = {
             'order id': ['id', 'transaction', 'invoice', 'orderid'],
             'order date': ['date', 'time', 'timestamp', 'created_at', 'orderdate'],
-            'customer name': ['customer', 'name', 'client', 'buyer', 'user'],
+            'customer name': ['customer', 'name', 'client', 'buyer', 'user', 'customer_id'],
             'region': ['area', 'zone', 'state', 'territory'],
             'city': ['location', 'town'],
             'category': ['type', 'group', 'department'],
             'sub-category': ['subcategory', 'sub_category', 'sub'],
-            'product name': ['product', 'item', 'article'],
+            'product name': ['product', 'item', 'article', 'product_id'],
             'quantity': ['qty', 'amount', 'count'],
             'unit price': ['price', 'cost', 'rate', 'unitprice'],
             'discount': ['off', 'reduction', 'discount'],
-            'sales': ['revenue', 'total', 'amount'],
-            'profit': ['margin', 'gain'],
-            'payment mode': ['payment', 'method', 'payment_method', 'type']
+            'sales': ['revenue', 'total', 'amount', 'total_amount'],
+            'profit': ['margin', 'gain', 'profit_margin'],
+            'payment mode': ['payment', 'method', 'payment_method', 'type'],
+            'delivery time': ['delivery', 'days', 'delivery_time_days'],
+            'returned': ['returned', 'return'],
+            'shipping cost': ['shipping', 'shipping_cost'],
+            'age': ['age', 'customer_age'],
+            'gender': ['gender', 'customer_gender']
         }
 
         def normalize(text):
@@ -134,7 +141,8 @@ class ETLPipeline:
         expected_columns = [
             'Order ID', 'Order Date', 'Customer Name', 'Region', 'City',
             'Category', 'Sub-Category', 'Product Name', 'Quantity',
-            'Unit Price', 'Discount', 'Sales', 'Profit', 'Payment Mode'
+            'Unit Price', 'Discount', 'Sales', 'Profit', 'Payment Mode',
+            'Delivery Time', 'Returned', 'Shipping Cost', 'Age', 'Gender'
         ]
         
         # Handle missing columns by adding defaults
@@ -142,10 +150,12 @@ class ETLPipeline:
         if missing_cols:
             print(f"Schema Validation: Missing columns detected: {missing_cols}. Applying defaults.")
             for col in missing_cols:
-                if col in ['Unit Price', 'Discount', 'Sales', 'Profit', 'Quantity']:
+                if col in ['Unit Price', 'Discount', 'Sales', 'Profit', 'Quantity', 'Delivery Time', 'Shipping Cost', 'Age']:
                     df[col] = 0
                 elif col == 'Order Date':
                     df[col] = pd.Timestamp.now()
+                elif col == 'Returned':
+                    df[col] = False
                 else:
                     df[col] = 'Unknown'
         
@@ -178,7 +188,18 @@ class ETLPipeline:
         df['Order Date'] = pd.to_datetime(df['Order Date'], errors='coerce')
         df.dropna(subset=['Order Date'], inplace=True)
         
-        # 6. Deduplication
+        # 6. Boolean Conversion for 'Returned'
+        if 'Returned' in df.columns:
+            # Map various true/false strings to boolean
+            df['Returned'] = df['Returned'].astype(str).str.lower().map({
+                'yes': True, 'no': False, 
+                '1': True, '0': False, 
+                'true': True, 'false': False,
+                '1.0': True, '0.0': False
+            })
+            df['Returned'] = df['Returned'].fillna(False)
+        
+        # 7. Deduplication
         df.drop_duplicates(inplace=True)
         
         self.cleaned_df = df
@@ -204,7 +225,7 @@ class ETLPipeline:
         
         with transaction.atomic():
             # 1. Collect unique entities to reduce DB round-trips
-            unique_customers = df[['Customer Name', 'Region', 'City']].drop_duplicates()
+            unique_customers = df[['Customer Name', 'Region', 'City', 'Age', 'Gender']].drop_duplicates(subset=['Customer Name', 'Region', 'City'])
             unique_products = df[['Product Name', 'Category', 'Sub-Category']].drop_duplicates()
             
             # Map for efficient lookup
@@ -215,6 +236,18 @@ class ETLPipeline:
                     region=row['Region'],
                     city=row['City']
                 )
+                # Update attributes if they are new or missing
+                needs_save = False
+                if row['Age'] != 0 and (cust.age is None or cust.age == 0):
+                    cust.age = row['Age']
+                    needs_save = True
+                if row['Gender'] != 'Unknown' and (not cust.gender or cust.gender == 'Unknown'):
+                    cust.gender = row['Gender']
+                    needs_save = True
+                
+                if needs_save:
+                    cust.save()
+                
                 customer_map[(row['Customer Name'], row['Region'], row['City'])] = cust
                 
             product_map = {}
@@ -226,10 +259,7 @@ class ETLPipeline:
                 )
                 product_map[(row['Product Name'], row['Category'], row['Sub-Category'])] = prod
             
-            # 2. Prepare Sales objects for bulk create (Skip existing to maintain idempotency if needed)
-            # For simplicity in this demo, we append all cleaned data. 
-            # In production, we'd check for (Order ID + Product ID) uniqueness.
-            
+            # 2. Prepare Sales objects for bulk create
             sales_to_create = []
             for _, row in df.iterrows():
                 sales_to_create.append(Sale(
@@ -242,7 +272,10 @@ class ETLPipeline:
                     discount=row['Discount'],
                     total_sales=row['Sales'],
                     profit=row['Profit'],
-                    payment_mode=row['Payment Mode']
+                    payment_mode=row['Payment Mode'],
+                    delivery_time_days=row['Delivery Time'],
+                    returned=row['Returned'],
+                    shipping_cost=row['Shipping Cost']
                 ))
             
             Sale.objects.bulk_create(sales_to_create, batch_size=1000)

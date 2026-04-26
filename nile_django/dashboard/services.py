@@ -63,15 +63,39 @@ class AnalyticsService:
 
     @staticmethod
     def generate_csv_report(queryset):
-        # Flatten for export
+        # Flatten for export with human-readable headers
         data = list(queryset.values(
             'order_id', 'order_date', 'customer__name', 'customer__region', 
-            'customer__city', 'product__name', 'product__category', 
-            'quantity', 'unit_price', 'total_sales', 'profit', 'payment_mode'
+            'customer__city', 'customer__age', 'customer__gender',
+            'product__name', 'product__category', 
+            'quantity', 'unit_price', 'total_sales', 'profit', 
+            'shipping_cost', 'delivery_time_days', 'returned', 'payment_mode'
         ))
         df = pd.DataFrame(data)
         if df.empty:
             return None
+        
+        # Rename columns for clarity
+        column_map = {
+            'order_id': 'Order ID',
+            'order_date': 'Order Date',
+            'customer__name': 'Customer Name',
+            'customer__region': 'Region',
+            'customer__city': 'City',
+            'customer__age': 'Age',
+            'customer__gender': 'Gender',
+            'product__name': 'Product Name',
+            'product__category': 'Category',
+            'quantity': 'Quantity',
+            'unit_price': 'Unit Price',
+            'total_sales': 'Total Sales',
+            'profit': 'Profit',
+            'shipping_cost': 'Shipping Cost',
+            'delivery_time_days': 'Delivery Days',
+            'returned': 'Returned',
+            'payment_mode': 'Payment Mode'
+        }
+        df = df.rename(columns=column_map)
         
         output = io.StringIO()
         df.to_csv(output, index=False)
@@ -81,12 +105,35 @@ class AnalyticsService:
     def generate_excel_report(queryset):
         data = list(queryset.values(
             'order_id', 'order_date', 'customer__name', 'customer__region', 
-            'customer__city', 'product__name', 'product__category', 
-            'quantity', 'unit_price', 'total_sales', 'profit', 'payment_mode'
+            'customer__city', 'customer__age', 'customer__gender',
+            'product__name', 'product__category', 
+            'quantity', 'unit_price', 'total_sales', 'profit', 
+            'shipping_cost', 'delivery_time_days', 'returned', 'payment_mode'
         ))
         df = pd.DataFrame(data)
         if df.empty:
             return None
+        
+        column_map = {
+            'order_id': 'Order ID',
+            'order_date': 'Order Date',
+            'customer__name': 'Customer Name',
+            'customer__region': 'Region',
+            'customer__city': 'City',
+            'customer__age': 'Age',
+            'customer__gender': 'Gender',
+            'product__name': 'Product Name',
+            'product__category': 'Category',
+            'quantity': 'Quantity',
+            'unit_price': 'Unit Price',
+            'total_sales': 'Total Sales',
+            'profit': 'Profit',
+            'shipping_cost': 'Shipping Cost',
+            'delivery_time_days': 'Delivery Days',
+            'returned': 'Returned',
+            'payment_mode': 'Payment Mode'
+        }
+        df = df.rename(columns=column_map)
         
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:

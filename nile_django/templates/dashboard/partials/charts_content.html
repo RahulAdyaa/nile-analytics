@@ -30,47 +30,93 @@
         <div class="flex flex-col items-end gap-4 min-w-[200px]">
             <span class="text-[9px] font-mono uppercase tracking-[0.4em] text-brand-muted">Data_Extract //</span>
             <div class="flex gap-2">
-                <a href="{% url 'export_report' 'csv' %}?country={{ selected_country }}" class="px-6 py-2 bg-brand-text text-white rounded-full text-[10px] font-mono font-bold hover:bg-brand-red transition-all uppercase tracking-widest">CSV</a>
-                <a href="{% url 'export_report' 'excel' %}?country={{ selected_country }}" class="px-6 py-2 tactical-border text-brand-text rounded-full text-[10px] font-mono font-bold hover:bg-brand-bg transition-all uppercase tracking-widest">XLSX</a>
+                <a href="{% url 'export_report' 'csv' %}?country={{ selected_country }}&category={{ selected_category }}&start_date={{ start_date }}&end_date={{ end_date }}" class="px-6 py-2 bg-brand-text text-white rounded-full text-[10px] font-mono font-bold hover:bg-brand-red transition-all uppercase tracking-widest">CSV</a>
+                <a href="{% url 'export_report' 'excel' %}?country={{ selected_country }}&category={{ selected_category }}&start_date={{ start_date }}&end_date={{ end_date }}" class="px-6 py-2 tactical-border text-brand-text rounded-full text-[10px] font-mono font-bold hover:bg-brand-bg transition-all uppercase tracking-widest">XLSX</a>
             </div>
         </div>
     </div>
 
     <!-- Row 02: Visual Analytics Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden" data-scroll data-scroll-speed="0.5">
             <div class="absolute top-0 right-0 p-6">
                 <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Visual_01 //</span>
             </div>
             <div class="mt-4">{{ charts.chart_trend|safe }}</div>
+            <p class="text-[10px] font-mono text-brand-muted mt-4 uppercase tracking-wider px-2 opacity-60">
+                Analysis of daily revenue cycles. Peaks often correlate with logistical surges or marketing campaigns.
+            </p>
         </div>
-        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden" data-scroll data-scroll-speed="1.2">
              <div class="absolute top-0 right-0 p-6">
                 <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Visual_02 //</span>
             </div>
             <div class="mt-4">{{ charts.chart_country|safe }}</div>
+            <p class="text-[10px] font-mono text-brand-muted mt-4 uppercase tracking-wider px-2 opacity-60">
+                Geospatial revenue distribution. We are seeing significant traction in high-density urban clusters.
+            </p>
         </div>
     </div>
 
     <!-- Row 03: Advanced Intelligence -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden" data-scroll data-scroll-speed="0.8">
              <div class="absolute top-0 right-0 p-6">
                 <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Intelligence_01 //</span>
             </div>
              {% if charts.chart_rfm %}
                 <div class="mt-4">{{ charts.chart_rfm|safe }}</div>
+                <p class="text-[10px] font-mono text-brand-muted mt-4 uppercase tracking-wider px-2 opacity-60">
+                    RFM Segmentation identifies our champions. Maintaining high frequency is critical for node stability.
+                </p>
              {% else %}
                 <div class="flex items-center justify-center min-h-[300px] text-[10px] font-mono text-brand-muted uppercase tracking-widest animate-pulse">
                     Calculating_RFM_Matrices...
                 </div>
              {% endif %}
         </div>
-        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden" data-scroll data-scroll-speed="0.6">
             <div class="absolute top-0 right-0 p-6">
                 <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Inventory_01 //</span>
             </div>
             <div class="mt-4">{{ charts.chart_prod|safe }}</div>
+            <p class="text-[10px] font-mono text-brand-muted mt-4 uppercase tracking-wider px-2 opacity-60">
+                Top 10 SKUs by total sales value. These products represent the core of our current inventory velocity.
+            </p>
+        </div>
+    </div>
+
+    <!-- Row 04: Demographics & Returns (New) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+             <div class="absolute top-0 right-0 p-6">
+                <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Demographics_01 //</span>
+            </div>
+             {% if charts.chart_age %}
+                <div class="mt-4">{{ charts.chart_age|safe }}</div>
+                <p class="text-[10px] font-mono text-brand-muted mt-4 uppercase tracking-wider px-2 opacity-60">
+                    Demographic age spread. Understanding the user profile allows for tailored experience protocols.
+                </p>
+             {% else %}
+                <div class="flex items-center justify-center min-h-[300px] text-[10px] font-mono text-brand-muted uppercase tracking-widest animate-pulse">
+                    Aggregating_Demographics...
+                </div>
+             {% endif %}
+        </div>
+        <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-6">
+                <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Logistics_01 //</span>
+            </div>
+            {% if charts.chart_return %}
+                <div class="mt-4">{{ charts.chart_return|safe }}</div>
+                <p class="text-[10px] font-mono text-brand-muted mt-4 uppercase tracking-wider px-2 opacity-60">
+                    Post-delivery status analysis. High return rates in specific categories suggest logistical or quality anomalies.
+                </p>
+            {% else %}
+                <div class="flex items-center justify-center min-h-[300px] text-[10px] font-mono text-brand-muted uppercase tracking-widest animate-pulse">
+                    Analyzing_Returns...
+                </div>
+            {% endif %}
         </div>
     </div>
 
