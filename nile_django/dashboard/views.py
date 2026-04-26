@@ -262,7 +262,7 @@ def export_report(request, format):
 
 # ─── Admin Control Center ────────────────────────────────────────────────────
 
-# @login_required
+@login_required
 def control_center(request):
     """Admin-level data operations hub: file upload + ETL trigger."""
     # Temporary bypass to fix redirect loop
