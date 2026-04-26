@@ -205,10 +205,10 @@ def dashboard_home(request):
         sales = sales.filter(order_date__lte=end_date)
 
     stats = get_dashboard_stats(sales)
-    charts = generate_charts(sales)
     countries = Customer.objects.values_list('region', flat=True).distinct().order_by('region')
     categories = Product.objects.values_list('category', flat=True).distinct().order_by('category')
-
+    latest_upload = DataUpload.objects.filter(status=DataUpload.STATUS_SUCCESS).order_by('-uploaded_at').first()
+    
     context = {
         'stats': stats,
         'charts': charts,
@@ -218,6 +218,7 @@ def dashboard_home(request):
         'selected_category': category or 'All',
         'start_date': start_date or '',
         'end_date': end_date or '',
+        'latest_upload': latest_upload,
     }
 
     if request.htmx:
