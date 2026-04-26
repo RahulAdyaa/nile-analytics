@@ -8,10 +8,10 @@
             <span>Ingestion_Module // Mapping_Review</span>
         </div>
         
-        <h2 class="text-3xl font-heading font-bold text-brand-text tracking-tight mb-2">Column Mapping Required</h2>
+        <h2 class="text-3xl font-heading font-bold text-brand-text tracking-tight mb-2">Review Intelligent Mapping</h2>
         <p class="text-sm text-brand-muted mb-8">
-            We couldn't automatically map all columns in <strong>{{ upload.original_filename }}</strong> with high confidence. 
-            Please confirm or correct the mapping below.
+            Our system has intelligently matched the columns in <strong>{{ upload.original_filename }}</strong>. 
+            Please review the selections below and click "Confirm" to start the ingestion.
         </p>
 
         <form method="post">
@@ -41,6 +41,13 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+
+            <div class="flex items-center space-x-3 mb-10 bg-brand-red/5 p-4 rounded-xl border border-brand-red/20">
+                <input type="checkbox" id="wipe_existing" name="wipe_existing" class="w-4 h-4 text-brand-red border-brand-border rounded focus:ring-brand-red">
+                <label for="wipe_existing" class="text-xs font-mono font-bold text-brand-red uppercase tracking-widest cursor-pointer select-none">
+                    Wipe existing dataset for a clean ingestion? (Dataset Swap)
+                </label>
             </div>
 
             <div class="flex justify-between items-center">

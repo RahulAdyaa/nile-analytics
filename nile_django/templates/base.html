@@ -190,11 +190,17 @@
         });
 
         document.body.addEventListener('htmx:afterSwap', function(evt) {
+            const isGet = evt.detail.requestConfig && evt.detail.requestConfig.verb === 'get';
+            const isHistory = evt.detail.target.id === 'upload-history';
+            
+            // Skip entrance animations for background polling updates
+            if (isGet && isHistory) return;
+            
             const scripts = evt.detail.elt.querySelectorAll('script');
             scripts.forEach(s => eval(s.innerHTML));
             scroll.update();
             // Only animate the newly swapped content to prevent global "popping"
-            initAnimations(evt.detail.elt);
+            initAnimations(evt.detail.target);
         });
     </script>
 </body>

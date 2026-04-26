@@ -59,7 +59,7 @@ def scheduled_export_report():
     return f"Report successfully generated at {filepath}"
 
 @shared_task
-def process_data_upload(upload_id):
+def process_data_upload(upload_id, wipe_existing=False):
     """
     Background task to process uploaded data via ETLPipeline.
     """
@@ -76,7 +76,7 @@ def process_data_upload(upload_id):
         start_time = time.time()
         
         pipeline = ETLPipeline(upload.file.path, upload.column_mapping)
-        pipeline.run()
+        pipeline.run(wipe_existing=wipe_existing)
 
         upload.status = DataUpload.STATUS_SUCCESS
         upload.rows_processed = len(pipeline.final_df) if pipeline.final_df is not None else 0

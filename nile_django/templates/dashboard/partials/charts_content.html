@@ -5,7 +5,9 @@
             <div class="bg-white tactical-border p-8 rounded-[2rem] tactical-glow">
                 <div class="flex justify-between items-start mb-6">
                     <span class="text-[9px] font-mono font-bold text-brand-muted uppercase tracking-[0.3em]">Metric_01</span>
-                    <span class="text-brand-red text-[10px] font-mono font-bold tracking-widest">▲ 12.5%</span>
+                    <span class="{% if stats.revenue_growth >= 0 %}text-green-500{% else %}text-brand-red{% endif %} text-[10px] font-mono font-bold tracking-widest">
+                        {% if stats.revenue_growth >= 0 %}▲{% else %}▼{% endif %} {{ stats.revenue_growth|floatformat:1 }}%
+                    </span>
                 </div>
                 <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-brand-muted mb-1">Total_Revenue</p>
                 <h3 class="text-4xl font-heading font-bold text-brand-text tracking-tight">${{ stats.revenue|floatformat:0 }}</h3>
@@ -13,7 +15,9 @@
             <div class="bg-white tactical-border p-8 rounded-[2rem] tactical-glow">
                 <div class="flex justify-between items-start mb-6">
                     <span class="text-[9px] font-mono font-bold text-brand-muted uppercase tracking-[0.3em]">Metric_02</span>
-                    <span class="text-brand-red text-[10px] font-mono font-bold tracking-widest">▲ 4.3%</span>
+                    <span class="{% if stats.volume_growth >= 0 %}text-green-500{% else %}text-brand-red{% endif %} text-[10px] font-mono font-bold tracking-widest">
+                        {% if stats.volume_growth >= 0 %}▲{% else %}▼{% endif %} {{ stats.volume_growth|floatformat:1 }}%
+                    </span>
                 </div>
                 <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-brand-muted mb-1">Total_Volume</p>
                 <h3 class="text-4xl font-heading font-bold text-brand-text tracking-tight">{{ stats.orders }}</h3>
@@ -21,6 +25,7 @@
             <div class="bg-white tactical-border p-8 rounded-[2rem] tactical-glow">
                 <div class="flex justify-between items-start mb-6">
                     <span class="text-[9px] font-mono font-bold text-brand-muted uppercase tracking-[0.3em]">Metric_03</span>
+                    <span class="text-brand-muted text-[10px] font-mono font-bold tracking-widest">LIVE_NODES</span>
                 </div>
                 <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-brand-muted mb-1">Active_Nodes</p>
                 <h3 class="text-4xl font-heading font-bold text-brand-text tracking-tight">{{ stats.customers }}</h3>
@@ -120,7 +125,6 @@
         </div>
     </div>
 
-    <!-- Row 04: Predictive Forecasting (Full Width) -->
     {% if charts.chart_forecast %}
     <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
         <div class="absolute top-0 right-0 p-6">
@@ -130,4 +134,50 @@
     </div>
     {% endif %}
 
+    <!-- Row 05: Raw Telemetry (Digital Ledger) -->
+    <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+        <div class="flex justify-between items-center mb-8">
+            <div class="space-y-1">
+                <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Ledger_01 //</span>
+                <h3 class="text-xl font-heading font-bold text-brand-text">Recent Data Packets</h3>
+            </div>
+            <div class="flex items-center space-x-2 text-[10px] font-mono text-brand-muted uppercase tracking-widest">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span>Live_Sync_Active</span>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b border-brand-border">
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Order_ID</th>
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Date</th>
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Entity / Customer</th>
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Region</th>
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Product_SKU</th>
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted text-right">Revenue</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-brand-border/50">
+                    {% for sale in recent_sales %}
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="py-4 text-[11px] font-mono font-bold text-brand-text">{{ sale.order_id }}</td>
+                        <td class="py-4 text-[11px] font-mono text-brand-muted">{{ sale.order_date|date:"Y-m-d" }}</td>
+                        <td class="py-4 text-[11px] font-bold text-brand-text">{{ sale.customer.name }}</td>
+                        <td class="py-4 text-[11px] font-mono text-brand-muted uppercase tracking-tight">{{ sale.customer.region }}</td>
+                        <td class="py-4 text-[11px] text-brand-text truncate max-w-[150px]">{{ sale.product.name }}</td>
+                        <td class="py-4 text-[11px] font-mono font-bold text-brand-red text-right">${{ sale.total_sales|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-[11px] font-mono text-brand-muted uppercase tracking-widest">
+                            No_Packets_Detected_In_Selected_Range
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>

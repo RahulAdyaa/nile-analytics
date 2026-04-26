@@ -13,7 +13,7 @@ class ETLPipeline:
         self.validated_df = None
         self.final_df = None
 
-    def run(self):
+    def run(self, wipe_existing=False):
         """Main execution entry point for the ETL pipeline."""
         print(f"Starting ETL Pipeline for: {self.file_path}")
         if self.raw_df is None:
@@ -21,7 +21,7 @@ class ETLPipeline:
         self.validate_schema()
         self.clean_data()
         self.feature_engineering()
-        self.load_to_db()
+        self.load_to_db(wipe_existing=wipe_existing)
         print("ETL Pipeline completed successfully.")
 
     @property
@@ -58,37 +58,33 @@ class ETLPipeline:
         print(f"Extraction: Read {len(self.raw_df)} rows.")
 
     def _auto_map_columns(self):
-        """Automatically infers and maps uploaded columns to expected columns."""
+        """Automatically infers and maps uploaded columns using multi-level intelligent matching."""
         import difflib
         import re
 
-        expected_columns = [
-            'Order ID', 'Order Date', 'Customer Name', 'Region', 'City',
-            'Category', 'Sub-Category', 'Product Name', 'Quantity',
-            'Unit Price', 'Discount', 'Sales', 'Profit', 'Payment Mode',
-            'Delivery Time', 'Returned', 'Shipping Cost', 'Age', 'Gender'
-        ]
+        expected_columns = self.expected_columns_list
         
+        # Expanded Intelligent Alias Library
         aliases = {
-            'order id': ['id', 'transaction', 'invoice', 'orderid'],
-            'order date': ['date', 'time', 'timestamp', 'created_at', 'orderdate'],
-            'customer name': ['customer', 'name', 'client', 'buyer', 'user', 'customer_id'],
-            'region': ['area', 'zone', 'state', 'territory'],
-            'city': ['location', 'town'],
-            'category': ['type', 'group', 'department'],
-            'sub-category': ['subcategory', 'sub_category', 'sub'],
-            'product name': ['product', 'item', 'article', 'product_id'],
-            'quantity': ['qty', 'amount', 'count'],
-            'unit price': ['price', 'cost', 'rate', 'unitprice'],
-            'discount': ['off', 'reduction', 'discount'],
-            'sales': ['revenue', 'total', 'amount', 'total_amount'],
-            'profit': ['margin', 'gain', 'profit_margin'],
-            'payment mode': ['payment', 'method', 'payment_method', 'type'],
-            'delivery time': ['delivery', 'days', 'delivery_time_days'],
-            'returned': ['returned', 'return'],
-            'shipping cost': ['shipping', 'shipping_cost'],
-            'age': ['age', 'customer_age'],
-            'gender': ['gender', 'customer_gender']
+            'order id': ['id', 'transaction', 'invoice', 'orderid', 'order_no', 'ref_id', 'trans_id'],
+            'order date': ['date', 'time', 'timestamp', 'created_at', 'orderdate', 'transaction_date', 'purchase_date'],
+            'customer name': ['customer', 'name', 'client', 'buyer', 'user', 'purchaser', 'full_name', 'contact_name'],
+            'region': ['area', 'zone', 'state', 'territory', 'province', 'distict'],
+            'city': ['location', 'town', 'municipality', 'shipping_city'],
+            'category': ['type', 'group', 'department', 'class', 'division'],
+            'sub-category': ['subcategory', 'sub_category', 'sub', 'sub_class', 'sub_group'],
+            'product name': ['product', 'item', 'article', 'description', 'sku_name', 'item_name'],
+            'quantity': ['qty', 'amount', 'count', 'units', 'volume'],
+            'unit price': ['price', 'cost', 'rate', 'unitprice', 'msrp', 'list_price'],
+            'discount': ['off', 'reduction', 'rebate', 'promo', 'markdown'],
+            'sales': ['revenue', 'total', 'amount', 'total_amount', 'line_total', 'gross_sales', 'net_sales'],
+            'profit': ['margin', 'gain', 'profit_margin', 'net_profit', 'earnings'],
+            'payment mode': ['payment', 'method', 'payment_method', 'type', 'pay_type', 'pay_mode'],
+            'delivery time': ['delivery', 'days', 'delivery_time_days', 'shipping_days', 'transit_time'],
+            'returned': ['returned', 'return', 'refunded', 'is_returned'],
+            'shipping cost': ['shipping', 'shipping_cost', 'freight', 'delivery_fee'],
+            'age': ['age', 'customer_age', 'user_age'],
+            'gender': ['gender', 'customer_gender', 'sex', 'user_gender']
         }
 
         def normalize(text):
@@ -102,29 +98,42 @@ class ETLPipeline:
             norm_expected = normalize(expected)
             best_match = None
             
-            # 1. Exact normalized match
+            # Level 1: Exact / Normalized Match
             for col in actual_cols:
                 if col in assigned_actuals: continue
                 if normalize(col) == norm_expected:
                     best_match = col
                     break
             
-            # 2. Alias match
+            # Level 2: Comprehensive Alias Match
             if not best_match:
                 exp_key = expected.lower()
-                for col in actual_cols:
-                    if col in assigned_actuals: continue
-                    norm_col = normalize(col)
-                    if exp_key in aliases and any(normalize(alias) in norm_col for alias in aliases[exp_key]):
-                        best_match = col
-                        break
+                if exp_key in aliases:
+                    for col in actual_cols:
+                        if col in assigned_actuals: continue
+                        norm_col = normalize(col)
+                        if any(normalize(alias) == norm_col for alias in aliases[exp_key]):
+                            best_match = col
+                            break
+            
+            # Level 3: Fuzzy / Similarity Match (Levenshtein Distance)
+            # Increased cutoff to 0.85 to prevent "customer_age" mapping to "customer name"
+            if not best_match:
+                matches = difflib.get_close_matches(normalize(expected), [normalize(c) for c in actual_cols if c not in assigned_actuals], n=1, cutoff=0.85)
+                if matches:
+                    # Find back the original column name from the normalized match
+                    for col in actual_cols:
+                        if col in assigned_actuals: continue
+                        if normalize(col) == matches[0]:
+                            best_match = col
+                            break
 
             if best_match:
                 mapping[best_match] = expected
                 assigned_actuals.add(best_match)
 
         self.column_mapping = mapping
-        print(f"Auto-mapped columns: {self.column_mapping}")
+        print(f"Intelligent Mapping: Resulting Map -> {self.column_mapping}")
 
     def validate_schema(self):
         """Step 2: Validation - Schema enforcement with auto-mapping."""
@@ -219,11 +228,17 @@ class ETLPipeline:
         self.final_df = df
         print("Feature Engineering: Derived metrics computed.")
 
-    def load_to_db(self):
+    def load_to_db(self, wipe_existing=False):
         """Step 5: Loading - Idempotent relational loading into database."""
         df = self.final_df
         
         with transaction.atomic():
+            if wipe_existing:
+                print("Wiping existing data for a clean ingestion...")
+                Sale.objects.all().delete()
+                Customer.objects.all().delete()
+                Product.objects.all().delete()
+            
             # 1. Collect unique entities to reduce DB round-trips
             unique_customers = df[['Customer Name', 'Region', 'City', 'Age', 'Gender']].drop_duplicates(subset=['Customer Name', 'Region', 'City'])
             unique_products = df[['Product Name', 'Category', 'Sub-Category']].drop_duplicates()
