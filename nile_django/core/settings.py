@@ -102,8 +102,6 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        # Replace this value with your local database URL
-        default='postgresql://rahuladya:@127.0.0.1:5432/nile_db',
         conn_max_age=600
     )
 }
