@@ -12,16 +12,19 @@
             <h2 class="text-6xl font-heading font-bold text-brand-text tracking-tight">Intelligence Dashboard</h2>
             <p class="text-brand-muted mt-4 max-w-xl font-medium">Real-time telemetry and advanced analytics for the global retail network.</p>
             
-            <div class="mt-6 flex items-center space-x-3 bg-gray-50/80 border border-brand-border/30 w-fit rounded-full px-5 py-2 shadow-sm">
-                <span class="text-xs font-mono text-brand-muted uppercase tracking-widest font-bold">Data_Source:</span>
-                <span class="text-sm font-mono text-brand-text font-bold">
+            <div class="mt-8 flex items-center space-x-4 bg-white/50 border-2 border-brand-border/50 w-fit rounded-2xl px-6 py-3 shadow-sm backdrop-blur-sm">
+                <span class="text-sm font-mono text-brand-muted uppercase tracking-[0.2em] font-black">Data_Source:</span>
+                <span class="text-lg font-mono text-brand-text font-black tracking-tight">
                     {% if latest_upload %}
                         {{ latest_upload.original_filename }}
                     {% else %}
                         SYSTEM_INTEGRATED_POSTGRES
                     {% endif %}
                 </span>
-                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                <div class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]"></span>
+                </div>
             </div>
         </div>
         <form id="filters-form" 
