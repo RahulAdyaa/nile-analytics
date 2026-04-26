@@ -3,65 +3,130 @@
 {% block content %}
 <div class="space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
     <!-- Header with Dynamic Filters -->
-    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pb-8 border-b border-brand-border">
-        <div data-scroll data-scroll-speed="-1">
-            <div class="flex items-center space-x-2 text-[10px] font-mono text-brand-red uppercase tracking-widest mb-4">
-                <span class="w-2 h-2 bg-brand-red rounded-full"></span>
-                <span>Operational_Overview // 01</span>
+    <!-- Enhanced Tactical Header -->
+    <div class="flex flex-col lg:flex-row lg:items-start justify-between gap-12 pb-12 border-b border-brand-border/60">
+        <!-- Left: Intelligence Meta -->
+        <div class="flex-1 space-y-6" data-scroll data-scroll-speed="-0.5">
+            <div class="flex items-center space-x-3 text-[10px] font-mono text-brand-red uppercase tracking-[0.4em] mb-2">
+                <span class="w-3 h-3 bg-brand-red rounded-sm animate-pulse"></span>
+                <span class="font-bold">Operational_Overview // 01</span>
+                <span class="text-brand-border">|</span>
+                <span class="text-brand-muted">V2.4.8_STABLE</span>
             </div>
-            <h2 class="text-6xl font-heading font-bold text-brand-text tracking-tight">Intelligence Dashboard</h2>
-            <p class="text-brand-muted mt-4 max-w-xl font-medium">Real-time telemetry and advanced analytics for the global retail network.</p>
             
-            <div class="mt-8 flex items-center space-x-4 bg-white/50 border-2 border-brand-border/50 w-fit rounded-2xl px-6 py-3 shadow-sm backdrop-blur-sm">
-                <span class="text-sm font-mono text-brand-muted uppercase tracking-[0.2em] font-black">Data_Source:</span>
-                <span class="text-lg font-mono text-brand-text font-black tracking-tight">
-                    {% if latest_upload %}
-                        {{ latest_upload.original_filename }}
-                    {% else %}
-                        SYSTEM_INTEGRATED_POSTGRES
-                    {% endif %}
-                </span>
-                <div class="relative flex h-3 w-3">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]"></span>
+            <h2 class="text-7xl font-heading font-black text-brand-text tracking-tighter leading-[0.9] lg:max-w-2xl">
+                Intelligence <span class="text-transparent bg-clip-text bg-gradient-to-br from-brand-text via-brand-text to-brand-muted/20">Dashboard</span>
+            </h2>
+            
+            <p class="text-brand-muted max-w-lg font-medium text-lg leading-relaxed">
+                Real-time telemetry and advanced predictive analytics for the global retail network infrastructure.
+            </p>
+
+            <!-- Data Integrity & Node Status -->
+            <div class="flex flex-wrap items-center gap-4 pt-4">
+                <div class="group flex items-center space-x-5 bg-white border border-brand-border shadow-sm rounded-2xl px-6 py-4 transition-all hover:shadow-xl hover:border-brand-red/30 cursor-default">
+                    <div class="p-3 bg-brand-bg rounded-xl group-hover:bg-brand-red/5 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-muted group-hover:text-brand-red transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-mono text-brand-muted uppercase tracking-widest font-black mb-0.5">Active_Data_Stream</span>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-lg font-mono text-brand-text font-black tracking-tighter">
+                                {% if latest_upload %}
+                                    {{ latest_upload.original_filename|truncatechars:20 }}
+                                {% else %}
+                                    CORE_PG_SYSTEM
+                                {% endif %}
+                            </span>
+                            <div class="relative flex h-2.5 w-2.5">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hidden sm:flex items-center space-x-5 bg-brand-text text-white rounded-2xl px-6 py-4 shadow-lg shadow-brand-text/10">
+                    <div class="p-3 bg-white/10 rounded-xl">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-widest font-black mb-0.5">Security_Protocol</span>
+                        <span class="text-lg font-mono font-black tracking-tighter">AES_256_ACTIVE</span>
+                    </div>
                 </div>
             </div>
         </div>
-        <form id="filters-form" 
-              hx-get="{% url 'dashboard_home' %}" 
-              hx-target="#dashboard-dynamic-content" 
-              hx-indicator="#loading-spinner"
-              hx-trigger="change"
-              hx-push-url="true"
-              class="flex flex-wrap items-center gap-4">
-            
-            <div class="flex items-center space-x-3 bg-brand-bg tactical-border rounded-full px-5 py-2">
-                <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Date:</label>
-                <input type="date" name="start_date" value="{{ start_date }}" class="bg-transparent border-none text-brand-text text-xs font-bold font-mono focus:ring-0 cursor-pointer p-0">
-                <span class="text-brand-muted text-xs font-mono">-</span>
-                <input type="date" name="end_date" value="{{ end_date }}" class="bg-transparent border-none text-brand-text text-xs font-bold font-mono focus:ring-0 cursor-pointer p-0">
+
+        <!-- Right: Tactical Control Panel -->
+        <div class="lg:w-[400px] bg-brand-bg/40 backdrop-blur-xl tactical-border rounded-3xl p-8 space-y-8 shadow-2xl relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
             </div>
 
-            <div class="flex items-center space-x-3 bg-brand-bg tactical-border rounded-full px-5 py-2">
-                <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Category:</label>
-                <select name="category" class="bg-transparent border-none text-brand-text text-xs font-bold font-mono focus:ring-0 cursor-pointer uppercase tracking-wider p-0 pr-6">
-                    <option value="All">ALL_CATEGORIES</option>
-                    {% for cat in categories %}
-                        <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat|upper }}</option>
-                    {% endfor %}
-                </select>
+            <div class="flex items-center justify-between border-b border-brand-border/40 pb-4">
+                <span class="text-[11px] font-mono font-bold uppercase tracking-widest text-brand-text flex items-center">
+                    <span class="w-1.5 h-1.5 bg-brand-red rounded-full mr-3"></span>
+                    Terminal_Controls
+                </span>
+                <span class="text-[9px] font-mono text-brand-muted">UTC_SYNC: 0.04ms</span>
             </div>
 
-            <div class="flex items-center space-x-3 bg-brand-bg tactical-border rounded-full px-5 py-2">
-                <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Region:</label>
-                <select name="country" class="bg-transparent border-none text-brand-text text-xs font-bold font-mono focus:ring-0 cursor-pointer uppercase tracking-wider p-0 pr-6">
-                    <option value="All">GLOBAL_VIEW</option>
-                    {% for country in countries %}
-                        <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>{{ country|upper }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </form>
+            <form id="filters-form" 
+                  hx-get="{% url 'dashboard_home' %}" 
+                  hx-target="#dashboard-dynamic-content" 
+                  hx-indicator="#loading-spinner"
+                  hx-trigger="change"
+                  hx-push-url="true"
+                  class="space-y-6">
+                
+                <div class="space-y-3">
+                    <label class="text-[10px] font-mono font-black uppercase tracking-[0.2em] text-brand-muted px-1">Temporal_Range</label>
+                    <div class="grid grid-cols-2 gap-3 p-1 bg-white tactical-border rounded-xl shadow-inner">
+                        <input type="date" name="start_date" value="{{ start_date }}" class="bg-transparent border-none text-brand-text text-[11px] font-black font-mono focus:ring-0 cursor-pointer p-3 text-center uppercase">
+                        <input type="date" name="end_date" value="{{ end_date }}" class="bg-transparent border-l border-brand-border/40 text-brand-text text-[11px] font-black font-mono focus:ring-0 cursor-pointer p-3 text-center uppercase">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-mono font-black uppercase tracking-[0.2em] text-brand-muted px-1">Sector_Filter</label>
+                        <div class="relative group">
+                            <select name="category" class="w-full bg-white tactical-border rounded-xl px-5 py-4 text-xs font-black font-mono text-brand-text uppercase tracking-widest focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red/40 appearance-none cursor-pointer transition-all">
+                                <option value="All">GLOBAL_CATEGORIES</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat|upper }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-brand-muted opacity-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-mono font-black uppercase tracking-[0.2em] text-brand-muted px-1">Regional_Focus</label>
+                        <div class="relative group">
+                            <select name="country" class="w-full bg-white tactical-border rounded-xl px-5 py-4 text-xs font-black font-mono text-brand-text uppercase tracking-widest focus:ring-2 focus:ring-brand-red/20 focus:border-brand-red/40 appearance-none cursor-pointer transition-all">
+                                <option value="All">WORLD_WIDE_DATA</option>
+                                {% for country in countries %}
+                                    <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>{{ country|upper }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-brand-muted opacity-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Dynamic Content Container -->
