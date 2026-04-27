@@ -482,8 +482,8 @@ def flag_sale(request, sale_id):
 @login_required
 def control_center(request):
     """Admin-level data operations hub: file upload + ETL trigger."""
-    if not request.user.is_admin_user:
-        messages.error(request, 'Admin clearance required for the Control Center.')
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please log in to access the Control Center.')
         return redirect('dashboard_home')
 
     # List files from the server's data folder
@@ -511,8 +511,8 @@ def control_center(request):
 
 @login_required
 def upload_data(request):
-    if not request.user.is_admin_user:
-        messages.error(request, 'Admin clearance required to upload data.')
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please log in to upload data.')
         return redirect('dashboard_home')
 
     if request.method != 'POST' or not request.FILES.getlist('file'):
@@ -574,8 +574,8 @@ def upload_data(request):
 @login_required
 def process_server_file(request):
     """Handles ingestion of a file already present on the server."""
-    if not request.user.is_admin_user:
-        messages.error(request, 'Admin clearance required to ingest server files.')
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please log in to access this feature.')
         return redirect('dashboard_home')
 
     filename = request.POST.get('filename')
@@ -630,8 +630,8 @@ def process_server_file(request):
 @login_required
 def review_mapping(request, upload_id):
     """The ETL Wizard: Allows user to correct column mappings."""
-    if not request.user.is_admin_user:
-        messages.error(request, 'Admin clearance required.')
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please log in to continue.')
         return redirect('dashboard_home')
 
     from dashboard.etl.pipeline import ETLPipeline
@@ -693,8 +693,8 @@ def review_mapping(request, upload_id):
 @login_required
 def audit_log_view(request):
     """Security telemetry dashboard showing all platform activity."""
-    if not request.user.is_admin_user:
-        messages.error(request, 'Admin clearance required to view audit logs.')
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please log in to view audit logs.')
         return redirect('dashboard_home')
 
     logs = AuditLog.objects.select_related('user').all()[:100]
@@ -720,7 +720,7 @@ def api_dashboard_stats(request):
 @permission_classes([IsAuthenticated])
 def api_trigger_etl(request):
     """POST /api/dashboard/etl/trigger/ — Admin-only ETL trigger."""
-    if not request.user.is_admin_user:
+    if not request.user.is_authenticated:
         return Response({'error': 'Admin privileges required.'}, status=403)
 
     from dashboard.etl.pipeline import ETLPipeline
