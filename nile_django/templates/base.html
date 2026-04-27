@@ -65,7 +65,7 @@
                 <span class="w-1.5 h-1.5 bg-brand-red rounded-full animate-pulse"></span>
                 <span>Active_Stream_Retail_V2</span>
             </div>
-            {% if user.is_authenticated and user.is_admin_user %}
+            {% if user.is_authenticated %}
             <div class="hidden lg:flex items-center space-x-4 ml-8 text-xs font-mono uppercase tracking-widest">
                 <a href="{% url 'audit_log' %}" 
                    hx-boost="false" 
