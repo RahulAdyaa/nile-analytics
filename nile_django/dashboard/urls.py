@@ -10,6 +10,7 @@ urlpatterns = [
     path('control/process-server-file/', views.process_server_file, name='process_server_file'),
     path('control/upload/<int:upload_id>/review/', views.review_mapping, name='review_mapping'),
     path('audit/', views.audit_log_view, name='audit_log'),
+    path('flag/<int:sale_id>/', views.flag_sale, name='flag_sale'),
 
     # ─── JWT-Protected API Routes ─────────────────────────────────────────────
     path('api/dashboard/stats/', views.api_dashboard_stats, name='api_dashboard_stats'),

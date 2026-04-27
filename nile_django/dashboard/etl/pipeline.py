@@ -27,8 +27,8 @@ class ETLPipeline:
     @property
     def expected_columns_list(self):
         return [
-            'Order ID', 'Order Date', 'Customer Name', 'Region', 'City',
-            'Category', 'Sub-Category', 'Product Name', 'Quantity',
+            'Order ID', 'Order Date', 'Customer ID', 'Customer Name', 'Region', 'City',
+            'Product ID', 'Category', 'Sub-Category', 'Product Name', 'Quantity',
             'Unit Price', 'Discount', 'Sales', 'Profit', 'Payment Mode',
             'Delivery Time', 'Returned', 'Shipping Cost', 'Age', 'Gender'
         ]
@@ -65,26 +65,29 @@ class ETLPipeline:
         expected_columns = self.expected_columns_list
         
         # Expanded Intelligent Alias Library
+        # Includes Django ORM-style names (customer__region) from our own exports
         aliases = {
-            'order id': ['id', 'transaction', 'invoice', 'orderid', 'order_no', 'ref_id', 'trans_id'],
-            'order date': ['date', 'time', 'timestamp', 'created_at', 'orderdate', 'transaction_date', 'purchase_date'],
-            'customer name': ['customer', 'name', 'client', 'buyer', 'user', 'purchaser', 'full_name', 'contact_name'],
-            'region': ['area', 'zone', 'state', 'territory', 'province', 'distict'],
-            'city': ['location', 'town', 'municipality', 'shipping_city'],
-            'category': ['type', 'group', 'department', 'class', 'division'],
-            'sub-category': ['subcategory', 'sub_category', 'sub', 'sub_class', 'sub_group'],
-            'product name': ['product', 'item', 'article', 'description', 'sku_name', 'item_name'],
-            'quantity': ['qty', 'amount', 'count', 'units', 'volume'],
-            'unit price': ['price', 'cost', 'rate', 'unitprice', 'msrp', 'list_price'],
+            'order id': ['id', 'transaction', 'invoice', 'orderid', 'order_no', 'ref_id', 'trans_id', 'order_id'],
+            'order date': ['date', 'time', 'timestamp', 'created_at', 'orderdate', 'transaction_date', 'purchase_date', 'order_date'],
+            'customer id': ['cust_id', 'customerid', 'client_id', 'user_id', 'buyer_id', 'customer_id'],
+            'customer name': ['customer', 'name', 'client', 'buyer', 'user', 'purchaser', 'full_name', 'contact_name', 'customer__name'],
+            'region': ['area', 'zone', 'state', 'territory', 'province', 'distict', 'customer__region'],
+            'city': ['location', 'town', 'municipality', 'shipping_city', 'customer__city'],
+            'product id': ['prod_id', 'productid', 'sku', 'item_id', 'article_id', 'product_id'],
+            'category': ['type', 'group', 'department', 'class', 'division', 'product__category'],
+            'sub-category': ['subcategory', 'sub_category', 'sub', 'sub_class', 'sub_group', 'product__sub_category'],
+            'product name': ['product', 'item', 'article', 'description', 'sku_name', 'item_name', 'product__name'],
+            'quantity': ['qty', 'count', 'units', 'volume'],
+            'unit price': ['price', 'cost', 'rate', 'unitprice', 'msrp', 'list_price', 'unit_price'],
             'discount': ['off', 'reduction', 'rebate', 'promo', 'markdown'],
-            'sales': ['revenue', 'total', 'amount', 'total_amount', 'line_total', 'gross_sales', 'net_sales'],
+            'sales': ['revenue', 'total_sales', 'total_amount', 'line_total', 'gross_sales', 'net_sales'],
             'profit': ['margin', 'gain', 'profit_margin', 'net_profit', 'earnings'],
-            'payment mode': ['payment', 'method', 'payment_method', 'type', 'pay_type', 'pay_mode'],
+            'payment mode': ['payment', 'method', 'payment_method', 'pay_type', 'pay_mode', 'payment_mode'],
             'delivery time': ['delivery', 'days', 'delivery_time_days', 'shipping_days', 'transit_time'],
             'returned': ['returned', 'return', 'refunded', 'is_returned'],
             'shipping cost': ['shipping', 'shipping_cost', 'freight', 'delivery_fee'],
-            'age': ['age', 'customer_age', 'user_age'],
-            'gender': ['gender', 'customer_gender', 'sex', 'user_gender']
+            'age': ['age', 'customer_age', 'user_age', 'customer__age'],
+            'gender': ['gender', 'customer_gender', 'sex', 'user_gender', 'customer__gender']
         }
 
         def normalize(text):
@@ -148,8 +151,8 @@ class ETLPipeline:
             print(f"Schema Validation: Applied mapping {self.column_mapping}")
 
         expected_columns = [
-            'Order ID', 'Order Date', 'Customer Name', 'Region', 'City',
-            'Category', 'Sub-Category', 'Product Name', 'Quantity',
+            'Order ID', 'Order Date', 'Customer ID', 'Customer Name', 'Region', 'City',
+            'Product ID', 'Category', 'Sub-Category', 'Product Name', 'Quantity',
             'Unit Price', 'Discount', 'Sales', 'Profit', 'Payment Mode',
             'Delivery Time', 'Returned', 'Shipping Cost', 'Age', 'Gender'
         ]
@@ -165,6 +168,8 @@ class ETLPipeline:
                     df[col] = pd.Timestamp.now()
                 elif col == 'Returned':
                     df[col] = False
+                elif col in ['Customer ID', 'Product ID']:
+                    df[col] = ''
                 else:
                     df[col] = 'Unknown'
         
@@ -240,8 +245,8 @@ class ETLPipeline:
                 Product.objects.all().delete()
             
             # 1. Collect unique entities to reduce DB round-trips
-            unique_customers = df[['Customer Name', 'Region', 'City', 'Age', 'Gender']].drop_duplicates(subset=['Customer Name', 'Region', 'City'])
-            unique_products = df[['Product Name', 'Category', 'Sub-Category']].drop_duplicates()
+            unique_customers = df[['Customer ID', 'Customer Name', 'Region', 'City', 'Age', 'Gender']].drop_duplicates(subset=['Customer Name', 'Region', 'City'])
+            unique_products = df[['Product ID', 'Product Name', 'Category', 'Sub-Category']].drop_duplicates(subset=['Product Name', 'Category', 'Sub-Category'])
             
             # Map for efficient lookup
             customer_map = {}
@@ -253,6 +258,12 @@ class ETLPipeline:
                 )
                 # Update attributes if they are new or missing
                 needs_save = False
+                
+                cust_id = str(row['Customer ID']).strip() if pd.notna(row['Customer ID']) else ''
+                if cust_id and cust_id.lower() != 'nan' and not cust.customer_id:
+                    cust.customer_id = cust_id
+                    needs_save = True
+                    
                 if row['Age'] != 0 and (cust.age is None or cust.age == 0):
                     cust.age = row['Age']
                     needs_save = True
@@ -272,6 +283,12 @@ class ETLPipeline:
                     category=row['Category'],
                     sub_category=row['Sub-Category']
                 )
+                
+                prod_id = str(row['Product ID']).strip() if pd.notna(row['Product ID']) else ''
+                if prod_id and prod_id.lower() != 'nan' and not prod.product_id:
+                    prod.product_id = prod_id
+                    prod.save()
+                    
                 product_map[(row['Product Name'], row['Category'], row['Sub-Category'])] = prod
             
             # 2. Prepare Sales objects for bulk create

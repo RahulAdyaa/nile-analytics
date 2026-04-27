@@ -65,7 +65,7 @@
                 <span class="w-1.5 h-1.5 bg-brand-red rounded-full animate-pulse"></span>
                 <span>Active_Stream_Retail_V2</span>
             </div>
-            {% if user.is_authenticated %}
+            {% if user.is_authenticated and user.is_admin_user %}
             <div class="hidden lg:flex items-center space-x-4 ml-8 text-xs font-mono uppercase tracking-widest">
                 <a href="{% url 'audit_log' %}" 
                    hx-boost="false" 
@@ -116,6 +116,16 @@
 
     <main class="container mx-auto px-8 pt-32 pb-12" data-scroll-container>
         <div data-scroll-section>
+            {% if messages %}
+            <div class="mb-8 space-y-3">
+                {% for message in messages %}
+                <div class="px-6 py-4 rounded-2xl text-sm font-mono flex items-center shadow-sm
+                    {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
             {% block content %}{% endblock %}
         </div>
     </main>
