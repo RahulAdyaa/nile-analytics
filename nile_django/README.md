@@ -10,19 +10,28 @@ A premium analytics dashboard built with **Django**, **HTMX**, and **Plotly Pyth
 
 ## 🛠 Setup & Run
 ### 1. Environment Setup
+Clone the repository and enter the project directory:
 ```bash
 cd nile_django
-source venv/bin/activate
-pip install -r requirements.txt  # (Created requirements.txt below)
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-### 2. Database & Data Load
-The data has already been loaded for you (10,000 records). If you wish to reload or add more:
+### 2. Configure Environment Variables
+Copy the template and update your credentials:
 ```bash
+cp .env.example .env
+```
+
+### 3. Database & Data Load
+Initialize the database and load the initial dataset:
+```bash
+python manage.py migrate
 python manage.py load_retail_data
 ```
 
-### 3. Start Server
+### 4. Start Server
 ```bash
 python manage.py runserver
 ```

@@ -1,37 +1,81 @@
 <div class="space-y-16 animate-in fade-in duration-500">
     <!-- Row 01: Global Telemetry + Controls -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 flex-1">
-            <div class="bg-white tactical-border p-8 rounded-[2rem] tactical-glow">
-                <div class="flex justify-between items-start mb-6">
-                    <span class="text-[9px] font-mono font-bold text-brand-muted uppercase tracking-[0.3em]">Metric_01</span>
-                    <span class="text-brand-red text-[10px] font-mono font-bold tracking-widest">▲ 12.5%</span>
+    <div class="flex flex-col gap-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <!-- Metric 01: Revenue -->
+            <div class="bg-white tactical-border p-6 rounded-[1.5rem] tactical-glow">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-[8px] font-mono font-bold text-brand-muted uppercase tracking-widest">MTRC_01</span>
+                    <span class="{% if stats.revenue_growth >= 0 %}text-green-500{% else %}text-brand-red{% endif %} text-[9px] font-mono font-bold">
+                        {% if stats.revenue_growth >= 0 %}▲{% else %}▼{% endif %} {{ stats.revenue_growth|floatformat:1 }}%
+                    </span>
                 </div>
-                <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-brand-muted mb-1">Total_Revenue</p>
-                <h3 class="text-4xl font-heading font-bold text-brand-text tracking-tight">${{ stats.revenue|floatformat:0 }}</h3>
+                <p class="text-[9px] font-mono uppercase tracking-widest text-brand-muted mb-1">Revenue</p>
+                <h3 class="text-2xl font-heading font-bold text-brand-text">${{ stats.revenue|floatformat:0 }}</h3>
             </div>
-            <div class="bg-white tactical-border p-8 rounded-[2rem] tactical-glow">
-                <div class="flex justify-between items-start mb-6">
-                    <span class="text-[9px] font-mono font-bold text-brand-muted uppercase tracking-[0.3em]">Metric_02</span>
-                    <span class="text-brand-red text-[10px] font-mono font-bold tracking-widest">▲ 4.3%</span>
+
+            <!-- Metric 02: Profit (New) -->
+            <div class="bg-brand-text p-6 rounded-[1.5rem] shadow-2xl relative overflow-hidden group hover:scale-[1.02] transition-transform duration-300">
+                <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-brand-red opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity"></div>
+                <div class="flex justify-between items-start mb-4 relative z-10">
+                    <span class="text-[8px] font-mono font-bold text-white/40 uppercase tracking-widest">MTRC_02</span>
+                    <span class="text-brand-red text-[9px] font-mono font-bold">NET_PROFIT</span>
                 </div>
-                <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-brand-muted mb-1">Total_Volume</p>
-                <h3 class="text-4xl font-heading font-bold text-brand-text tracking-tight">{{ stats.orders }}</h3>
+                <p class="text-[9px] font-mono uppercase tracking-widest text-white/50 mb-1 relative z-10">Net_Profit</p>
+                <h3 class="text-2xl font-heading font-bold text-white relative z-10">${{ stats.profit|floatformat:0 }}</h3>
             </div>
-            <div class="bg-white tactical-border p-8 rounded-[2rem] tactical-glow">
-                <div class="flex justify-between items-start mb-6">
-                    <span class="text-[9px] font-mono font-bold text-brand-muted uppercase tracking-[0.3em]">Metric_03</span>
+
+            <!-- Metric 03: Margin (New) -->
+            <div class="bg-white tactical-border p-6 rounded-[1.5rem] tactical-glow">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-[8px] font-mono font-bold text-brand-muted uppercase tracking-widest">MTRC_03</span>
+                    <span class="text-brand-text text-[9px] font-mono font-bold">MARGIN</span>
                 </div>
-                <p class="text-[10px] font-mono uppercase tracking-[0.2em] text-brand-muted mb-1">Active_Nodes</p>
-                <h3 class="text-4xl font-heading font-bold text-brand-text tracking-tight">{{ stats.customers }}</h3>
+                <p class="text-[9px] font-mono uppercase tracking-widest text-brand-muted mb-1">Avg_Margin</p>
+                <h3 class="text-2xl font-heading font-bold text-brand-red">{{ stats.avg_margin|floatformat:1 }}%</h3>
+            </div>
+
+            <!-- Metric 04: Volume -->
+            <div class="bg-white tactical-border p-6 rounded-[1.5rem] tactical-glow">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-[8px] font-mono font-bold text-brand-muted uppercase tracking-widest">MTRC_04</span>
+                    <span class="{% if stats.volume_growth >= 0 %}text-green-500{% else %}text-brand-red{% endif %} text-[9px] font-mono font-bold">
+                        {% if stats.volume_growth >= 0 %}▲{% else %}▼{% endif %} {{ stats.volume_growth|floatformat:1 }}%
+                    </span>
+                </div>
+                <p class="text-[9px] font-mono uppercase tracking-widest text-brand-muted mb-1">Volume</p>
+                <h3 class="text-2xl font-heading font-bold text-brand-text">{{ stats.orders }}</h3>
+            </div>
+
+            <!-- Metric 05: Customers -->
+            <div class="bg-white tactical-border p-6 rounded-[1.5rem] tactical-glow">
+                <div class="flex justify-between items-start mb-4">
+                    <span class="text-[8px] font-mono font-bold text-brand-muted uppercase tracking-widest">MTRC_05</span>
+                    <span class="text-brand-muted text-[9px] font-mono font-bold">ACTIVE</span>
+                </div>
+                <p class="text-[9px] font-mono uppercase tracking-widest text-brand-muted mb-1">Customers</p>
+                <h3 class="text-2xl font-heading font-bold text-brand-text">{{ stats.customers }}</h3>
             </div>
         </div>
 
-        <div class="flex flex-col items-end gap-4 min-w-[200px]">
-            <span class="text-[9px] font-mono uppercase tracking-[0.4em] text-brand-muted">Data_Extract //</span>
+        <div class="flex justify-between items-center bg-brand-bg/50 p-4 rounded-2xl border border-brand-border">
+             <div class="flex items-center space-x-6">
+                <div class="flex items-center space-x-2">
+                    <span class="w-1.5 h-1.5 bg-brand-red rounded-full animate-pulse"></span>
+                    <span class="text-[9px] font-mono font-bold text-brand-text uppercase tracking-widest">System_Sync // Online</span>
+                </div>
+                {% if rfm_summary %}
+                <div class="hidden md:flex items-center space-x-4">
+                    <span class="text-[8px] font-mono text-brand-muted uppercase tracking-widest">Health:</span>
+                    <span class="text-[9px] font-mono font-bold text-green-600">CHAMPIONS: {{ rfm_summary.Champions|default:0 }}</span>
+                    <span class="text-[9px] font-mono font-bold text-brand-red">AT_RISK: {{ rfm_summary.At_Risk|default:0 }}</span>
+                </div>
+                {% endif %}
+             </div>
+            
             <div class="flex gap-2">
-                <a href="{% url 'export_report' 'csv' %}?country={{ selected_country }}&category={{ selected_category }}&start_date={{ start_date }}&end_date={{ end_date }}" class="px-6 py-2 bg-brand-text text-white rounded-full text-[10px] font-mono font-bold hover:bg-brand-red transition-all uppercase tracking-widest">CSV</a>
-                <a href="{% url 'export_report' 'excel' %}?country={{ selected_country }}&category={{ selected_category }}&start_date={{ start_date }}&end_date={{ end_date }}" class="px-6 py-2 tactical-border text-brand-text rounded-full text-[10px] font-mono font-bold hover:bg-brand-bg transition-all uppercase tracking-widest">XLSX</a>
+                <a href="{% url 'export_report' 'csv' %}?country={{ selected_country }}&category={{ selected_category }}&start_date={{ start_date }}&end_date={{ end_date }}" class="px-5 py-2 bg-brand-text text-white rounded-lg text-[9px] font-mono font-bold hover:bg-brand-red transition-all uppercase tracking-widest">Export_CSV</a>
+                <a href="{% url 'export_report' 'excel' %}?country={{ selected_country }}&category={{ selected_category }}&start_date={{ start_date }}&end_date={{ end_date }}" class="px-5 py-2 tactical-border bg-white text-brand-text rounded-lg text-[9px] font-mono font-bold hover:bg-brand-bg transition-all uppercase tracking-widest">Export_XLSX</a>
             </div>
         </div>
     </div>
@@ -95,7 +139,7 @@
              {% if charts.chart_age %}
                 <div class="mt-4">{{ charts.chart_age|safe }}</div>
                 <p class="text-[10px] font-mono text-brand-muted mt-4 uppercase tracking-wider px-2 opacity-60">
-                    Demographic age spread. Understanding the user profile allows for tailored experience protocols.
+                    Customer demographic analysis. Understanding user profiles and payment preferences enables targeted strategies.
                 </p>
              {% else %}
                 <div class="flex items-center justify-center min-h-[300px] text-[10px] font-mono text-brand-muted uppercase tracking-widest animate-pulse">
@@ -110,7 +154,7 @@
             {% if charts.chart_return %}
                 <div class="mt-4">{{ charts.chart_return|safe }}</div>
                 <p class="text-[10px] font-mono text-brand-muted mt-4 uppercase tracking-wider px-2 opacity-60">
-                    Post-delivery status analysis. High return rates in specific categories suggest logistical or quality anomalies.
+                    Category performance analysis. Profitability and return patterns reveal operational efficiency across product lines.
                 </p>
             {% else %}
                 <div class="flex items-center justify-center min-h-[300px] text-[10px] font-mono text-brand-muted uppercase tracking-widest animate-pulse">
@@ -120,7 +164,6 @@
         </div>
     </div>
 
-    <!-- Row 04: Predictive Forecasting (Full Width) -->
     {% if charts.chart_forecast %}
     <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
         <div class="absolute top-0 right-0 p-6">
@@ -130,4 +173,58 @@
     </div>
     {% endif %}
 
+    <!-- Row 05: Raw Telemetry (Digital Ledger) -->
+    <div class="bg-white tactical-border p-10 rounded-[2.5rem] tactical-glow relative overflow-hidden">
+        <div class="flex justify-between items-center mb-8">
+            <div class="space-y-1">
+                <span class="text-[9px] font-mono text-brand-muted uppercase tracking-[0.4em]">Ledger_01 //</span>
+                <h3 class="text-xl font-heading font-bold text-brand-text">Recent Data Packets</h3>
+            </div>
+            <div class="flex items-center space-x-2 text-[10px] font-mono text-brand-muted uppercase tracking-widest">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span>Live_Sync_Active</span>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b border-brand-border">
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Order_ID</th>
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Date</th>
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Entity / Customer</th>
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Region</th>
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted">Product_SKU</th>
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted text-right">Revenue</th>
+                        <th class="pb-4 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-muted text-center">Command</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-brand-border/50">
+                    {% for sale in recent_sales %}
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="py-4 text-[11px] font-mono font-bold text-brand-text">{{ sale.order_id }}</td>
+                        <td class="py-4 text-[11px] font-mono text-brand-muted">{{ sale.order_date|date:"Y-m-d" }}</td>
+                        <td class="py-4 text-[11px] font-bold text-brand-text">{{ sale.customer.name }}</td>
+                        <td class="py-4 text-[11px] font-mono text-brand-muted uppercase tracking-tight">{{ sale.customer.region }}</td>
+                        <td class="py-4 text-[11px] text-brand-text truncate max-w-[150px]">{{ sale.product.name }}</td>
+                        <td class="py-4 text-[11px] font-mono font-bold text-brand-red text-right">${{ sale.total_sales|floatformat:2 }}</td>
+                        <td class="py-4 text-center">
+                            <div hx-get="{% url 'flag_sale' sale.id %}" hx-swap="outerHTML" class="cursor-pointer">
+                                <span class="font-bold {% if sale.is_flagged %}text-brand-red{% else %}text-brand-muted{% endif %} hover:scale-110 transition-transform">
+                                    {% if sale.is_flagged %}✓{% else %}!{% endif %}
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="py-12 text-center text-[11px] font-mono text-brand-muted uppercase tracking-widest">
+                            No_Packets_Detected_In_Selected_Range
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>

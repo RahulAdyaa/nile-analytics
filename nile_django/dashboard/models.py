@@ -3,6 +3,7 @@ from django.conf import settings
 
 
 class Customer(models.Model):
+    customer_id = models.CharField(max_length=100, null=True, blank=True, db_index=True)
     name = models.CharField(max_length=255)
     region = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
@@ -18,6 +19,7 @@ class Customer(models.Model):
 
 
 class Product(models.Model):
+    product_id = models.CharField(max_length=100, null=True, blank=True, db_index=True)
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=100)
     sub_category = models.CharField(max_length=100)
@@ -43,6 +45,7 @@ class Sale(models.Model):
     delivery_time_days = models.IntegerField(null=True, blank=True)
     returned = models.BooleanField(default=False)
     shipping_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    is_flagged = models.BooleanField(default=False)
 
     class Meta:
         indexes = [

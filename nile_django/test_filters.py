@@ -1,9 +1,11 @@
 import os
 import django
+from dotenv import load_dotenv
+
+load_dotenv()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 os.environ["DEBUG"] = "True"
 django.setup()
-
 from django.test import Client
 from django.contrib.auth import get_user_model
 

@@ -59,7 +59,7 @@ def scheduled_export_report():
     return f"Report successfully generated at {filepath}"
 
 @shared_task
-def process_data_upload(upload_id):
+def process_data_upload(upload_id, wipe_existing=False):
     """
     Background task to process uploaded data via ETLPipeline.
     """
@@ -67,6 +67,7 @@ def process_data_upload(upload_id):
     from .etl.pipeline import ETLPipeline
     import time
     import traceback
+    from django.db import connection
 
     try:
         upload = DataUpload.objects.get(id=upload_id)
@@ -76,7 +77,8 @@ def process_data_upload(upload_id):
         start_time = time.time()
         
         pipeline = ETLPipeline(upload.file.path, upload.column_mapping)
-        pipeline.run()
+        # Always wipe and replace to prevent duplicate data stacking
+        pipeline.run(wipe_existing=True)
 
         upload.status = DataUpload.STATUS_SUCCESS
         upload.rows_processed = len(pipeline.final_df) if pipeline.final_df is not None else 0
@@ -88,3 +90,5 @@ def process_data_upload(upload_id):
         upload.error_message = f"{str(e)}\n{traceback.format_exc()}"
         upload.save()
         return f"Failed: {str(e)}"
+    finally:
+        connection.close()
