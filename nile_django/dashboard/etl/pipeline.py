@@ -50,7 +50,10 @@ class ETLPipeline:
     def extract(self):
         """Step 1: Extraction - Support CSV and Excel."""
         if self.file_path.endswith('.csv'):
-            self.raw_df = pd.read_csv(self.file_path)
+            try:
+                self.raw_df = pd.read_csv(self.file_path, encoding='utf-8')
+            except UnicodeDecodeError:
+                self.raw_df = pd.read_csv(self.file_path, encoding='latin1')
         elif self.file_path.endswith('.xlsx'):
             self.raw_df = pd.read_excel(self.file_path, engine='openpyxl')
         else:
